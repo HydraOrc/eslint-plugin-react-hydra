@@ -1,3 +1,21 @@
+function traverse(node, visitor) {
+  if (!node || typeof node !== 'object') {
+    return;
+  }
+
+  visitor(node);
+
+  for (const key in node) {
+    const child = node[key];
+
+    if (Array.isArray(child)) {
+      child.forEach((c) => traverse(c, visitor));
+    } else {
+      traverse(child, visitor);
+    }
+  }
+}
+
 module.exports = {
   meta: {
     type: 'problem',
@@ -32,9 +50,9 @@ module.exports = {
 
     return {
       MethodDefinition(node) {
-        if (!isPrepareMethod(node)) return;
-
-        const sourceCode = context.getSourceCode();
+        if (!isPrepareMethod(node)) {
+          return;
+        }
 
         const check = (inner) => {
           if (isThisSetStateCall(inner)) {
@@ -45,7 +63,7 @@ module.exports = {
           }
         };
 
-        sourceCode.traverse(node.value.body, {
+        traverse(node.value.body, {
           enter: check,
         });
       },
